@@ -17,10 +17,10 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 python -m pip install --upgrade pip
 
 
-Sebastián: python -m pip install -r requirements.txt
+python -m pip install -r requirements.txt
 
 
-Sebastián: python -m pip install groq
+python -m pip install groq
 
 
-Sebastián: python -m pip install pypdf
+python -m pip install pypdf
