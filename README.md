@@ -5,7 +5,7 @@ python --version
 python -m venv .venv
 
 
-.\.venv\Scripts\Activate.ps1
+ .\.venv\Scripts\Activate.ps1
 
 
 Si la bloquea
