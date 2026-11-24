@@ -1,16 +1,12 @@
-
-import sqlite3
-import os
+from contextlib import closing
 from datetime import datetime
 
+# Usa la MISMA base de datos que los apuntes (ruta absoluta),
+# así no depende de desde qué carpeta ejecutes el bot.
+from database import conectar
 
-RUTA_DB = os.path.join("data", "estudio.db")
 
-
-def conectar():
-    os.makedirs("data", exist_ok=True)
-
-    conexion = sqlite3.connect(RUTA_DB)
+def _asegurar_tabla(conexion):
     conexion.execute("""
         CREATE TABLE IF NOT EXISTS historial_estudio (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -21,9 +17,6 @@ def conectar():
             fecha TEXT NOT NULL
         )
     """)
-    conexion.commit()
-
-    return conexion
 
 
 def guardar_interaccion(
@@ -32,30 +25,27 @@ def guardar_interaccion(
     pregunta: str,
     respuesta: str
 ):
-    conexion = conectar()
+    with closing(conectar()) as conexion:
+        _asegurar_tabla(conexion)
 
-    try:
-        conexion.execute("""
-            INSERT INTO historial_estudio
-            (user_id, tipo, pregunta, respuesta, fecha)
-            VALUES (?, ?, ?, ?, ?)
-        """, (
-            user_id,
-            tipo,
-            pregunta,
-            respuesta,
-            datetime.now().isoformat(timespec="seconds")
-        ))
-
-        conexion.commit()
-    finally:
-        conexion.close()
+        with conexion:
+            conexion.execute("""
+                INSERT INTO historial_estudio
+                (user_id, tipo, pregunta, respuesta, fecha)
+                VALUES (?, ?, ?, ?, ?)
+            """, (
+                user_id,
+                tipo,
+                pregunta,
+                respuesta,
+                datetime.now().isoformat(timespec="seconds")
+            ))
 
 
 def consultar_historial(user_id: int, limite: int = 10):
-    conexion = conectar()
+    with closing(conectar()) as conexion:
+        _asegurar_tabla(conexion)
 
-    try:
         cursor = conexion.execute("""
             SELECT id, tipo, pregunta, respuesta, fecha
             FROM historial_estudio
@@ -65,5 +55,3 @@ def consultar_historial(user_id: int, limite: int = 10):
         """, (user_id, limite))
 
         return cursor.fetchall()
-    finally:
-        conexion.close()
